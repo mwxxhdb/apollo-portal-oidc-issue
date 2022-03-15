@@ -1,0 +1,18 @@
+server:
+  forward-headers-strategy: framework
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          provider-name: keycloak
+          issuer-uri: https://keycloak.local/
+        registration:
+          registration-name: keycloak
+          authorization-grant-type: authorization_code
+          client-authentication-method: basic
+          client-id: apollo-portal
+          provider: keycloak
+          scope:
+          - openid
+          client-secret: secret

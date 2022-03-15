@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 13306:3306
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+      - /var/lib/mysql
+
+  apollo-config:
+    image: apolloconfig/apollo-configservice:1.9.2
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ApolloConfigDB?characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "18080:8080"
+    restart: on-failure
+
+  apollo-portal:
+    image: apolloconfig/apollo-portal:1.9.2
+    depends_on:
+      - apollo-config
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ApolloPortalDB?characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      APOLLO_PORTAL_ENVS: dev
+      DEV_META: http://apollo-config:8080
+      JAVA_OPTS: -Dspring.profiles.active=github,oidc
+    ports:
+      - 18070:8070
+    volumes:
+      - ./config/apollo/application-oidc.properties:/apollo-portal/config/application-oidc.properties
+    restart: on-failure
